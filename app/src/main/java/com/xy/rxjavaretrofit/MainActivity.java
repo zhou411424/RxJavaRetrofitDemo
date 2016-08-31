@@ -5,6 +5,7 @@ import android.os.Bundle;
 import android.util.Log;
 import android.widget.Button;
 
+import com.xy.rxjavaretrofit.http.ApiException;
 import com.xy.rxjavaretrofit.http.ApiFactory;
 import com.xy.rxjavaretrofit.http.DoubanMovieService;
 import com.xy.rxjavaretrofit.http.GithubService;
@@ -24,6 +25,7 @@ import retrofit2.Response;
 import rx.Observable;
 import rx.Subscriber;
 import rx.android.schedulers.AndroidSchedulers;
+import rx.functions.Func1;
 import rx.schedulers.Schedulers;
 
 public class MainActivity extends AppCompatActivity {
@@ -46,7 +48,8 @@ public class MainActivity extends AppCompatActivity {
 //        getUserInfo();
 //        getMovieTop250();
 //        getComingMovie();
-        getMovieTop250_2();
+//        getMovieTop250_2();
+        getMovieTop250_3();
     }
 
     /**
@@ -71,6 +74,44 @@ public class MainActivity extends AppCompatActivity {
                     @Override
                     public void onNext(MovieEntity movieEntity) {
                         Log.d(TAG, "getComingMovie==>onNext...moveEntity"+movieEntity.toString());
+                    }
+                });
+    }
+
+    private class HttpResultFunc1<T> implements Func1<HttpResult<T>, T> {
+
+        @Override
+        public T call(HttpResult<T> tHttpResult) {
+            if (tHttpResult.getCount() == 0) {
+                throw new ApiException(100);
+            }
+            return tHttpResult.getSubjects();
+        }
+    }
+
+    /**
+     * 使用retrofit和rxjava
+     */
+    public void getMovieTop250_3() {
+        DoubanMovieService doubanMovieService = ApiFactory.getDoubanMovieService(this);
+        doubanMovieService.getMovieTop250_2(0, 10)
+                .map(new HttpResultFunc1<List<MovieSubject>>())
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(new Subscriber<List<MovieSubject>>() {
+                    @Override
+                    public void onCompleted() {
+                        Log.d(TAG, "getComingMovie==>onCompleted...");
+                    }
+
+                    @Override
+                    public void onError(Throwable e) {
+                        Log.d(TAG, "getComingMovie==>onError...err msg: " + e.getMessage());
+                    }
+
+                    @Override
+                    public void onNext(List<MovieSubject> movieSubjects) {
+                        Log.d(TAG, "getComingMovie==>onNext...moveEntity"+movieSubjects.toString());
                     }
                 });
     }
