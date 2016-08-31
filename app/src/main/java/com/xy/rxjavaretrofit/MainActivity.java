@@ -8,8 +8,12 @@ import android.widget.Button;
 import com.xy.rxjavaretrofit.http.ApiFactory;
 import com.xy.rxjavaretrofit.http.DoubanMovieService;
 import com.xy.rxjavaretrofit.http.GithubService;
+import com.xy.rxjavaretrofit.model.HttpResult;
 import com.xy.rxjavaretrofit.model.MovieEntity;
+import com.xy.rxjavaretrofit.model.MovieSubject;
 import com.xy.rxjavaretrofit.model.User;
+
+import java.util.List;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -41,7 +45,8 @@ public class MainActivity extends AppCompatActivity {
         Log.d(TAG, "onClick");
 //        getUserInfo();
 //        getMovieTop250();
-        getComingMovie();
+//        getComingMovie();
+        getMovieTop250_2();
     }
 
     /**
@@ -66,6 +71,32 @@ public class MainActivity extends AppCompatActivity {
                     @Override
                     public void onNext(MovieEntity movieEntity) {
                         Log.d(TAG, "getComingMovie==>onNext...moveEntity"+movieEntity.toString());
+                    }
+                });
+    }
+
+    /**
+     * 使用retrofit和rxjava
+     */
+    public void getMovieTop250_2() {
+        DoubanMovieService doubanMovieService = ApiFactory.getDoubanMovieService(this);
+        doubanMovieService.getMovieTop250_2(0, 10)
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(new Subscriber<HttpResult<List<MovieSubject>>>() {
+                    @Override
+                    public void onCompleted() {
+                        Log.d(TAG, "getComingMovie==>onCompleted...");
+                    }
+
+                    @Override
+                    public void onError(Throwable e) {
+                        Log.d(TAG, "getComingMovie==>onError...err msg: " + e.getMessage());
+                    }
+
+                    @Override
+                    public void onNext(HttpResult<List<MovieSubject>> listHttpResult) {
+                        Log.d(TAG, "getComingMovie==>onNext...moveEntity"+listHttpResult.toString());
                     }
                 });
     }
