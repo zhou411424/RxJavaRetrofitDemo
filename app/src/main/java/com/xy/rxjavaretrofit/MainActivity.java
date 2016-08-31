@@ -13,6 +13,8 @@ import com.xy.rxjavaretrofit.model.HttpResult;
 import com.xy.rxjavaretrofit.model.MovieEntity;
 import com.xy.rxjavaretrofit.model.MovieSubject;
 import com.xy.rxjavaretrofit.model.User;
+import com.xy.rxjavaretrofit.subscribers.ProgressSubscriber;
+import com.xy.rxjavaretrofit.subscribers.SubscriberOnNextListener;
 
 import java.util.List;
 
@@ -39,8 +41,6 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         ButterKnife.bind(this);
-
-
     }
 
     @OnClick(R.id.merge_btn) public void onClick() {
@@ -49,7 +49,8 @@ public class MainActivity extends AppCompatActivity {
 //        getMovieTop250();
 //        getComingMovie();
 //        getMovieTop250_2();
-        getMovieTop250_3();
+//        getMovieTop250_3();
+        getMovieTop250_4();
     }
 
     /**
@@ -76,6 +77,26 @@ public class MainActivity extends AppCompatActivity {
                         Log.d(TAG, "getComingMovie==>onNext...moveEntity"+movieEntity.toString());
                     }
                 });
+    }
+
+
+    /**
+     * 使用retrofit和rxjava
+     */
+    public void getMovieTop250_4() {
+        DoubanMovieService doubanMovieService = ApiFactory.getDoubanMovieService(this);
+        doubanMovieService.getMovieTop250_2(0, 10)
+                .map(new HttpResultFunc1<List<MovieSubject>>())
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(new ProgressSubscriber<List<MovieSubject>>(MainActivity.this,
+                        new SubscriberOnNextListener<List<MovieSubject>>() {
+                            @Override
+                            public void onNext(List<MovieSubject> movieSubjects) {
+                                Log.d(TAG, "onNext==>movieSubjects="+movieSubjects.toString());
+                            }
+                        })
+                );
     }
 
     private class HttpResultFunc1<T> implements Func1<HttpResult<T>, T> {
